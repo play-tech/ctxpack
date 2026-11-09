@@ -215,6 +215,28 @@ Always kept if present: `.env.example`, `.env.sample`, `.env.template`.
 
 `--include src/** --include README.md` is a whitelist: only matching paths are packed. Globs understand `*`, `**` at the end (`src/**`), and exact prefixes.
 
+## Monorepo include/exclude
+
+In a monorepo you usually want one app's files, not the whole repo. Combine `--include` (whitelist) with `--ignore` (blacklist). Globs are processed in order: `--include` first, then `--ignore` last.
+
+```bash
+# include only the web app and shared UI package
+ctxpack . --include apps/web/** --include packages/ui/** -o web.md
+
+# same, but written with explicit excludes for the other apps
+ctxpack . \
+  --include apps/web/** \
+  --ignore "apps/**" \
+  --ignore "packages/**" \
+  --ignore "apps/admin/**" \
+  -o web.md
+
+# include everything except generated clients and lockfiles
+ctxpack . --ignore generated/** --ignore "*.gen.ts" -o prompt.md
+```
+
+The tree lists **kept** files only; `--verbose` lists drops.
+
 ## Gitignore, nested rules, and symlinks
 
 1. Built-in defaults (table above).
@@ -305,6 +327,9 @@ result.redactedCount;
 ```bash
 # monorepo app only
 ctxpack . --include apps/web/** --include packages/ui/** -o web.md
+
+# monorepo: include app, exclude other apps and packages
+ctxpack . --include apps/web/** --ignore "apps/**" --ignore "packages/**" --ignore "apps/admin/**" -o web.md
 
 # ignore generated clients
 ctxpack . --ignore generated/** --ignore "*.gen.ts" -o prompt.md
